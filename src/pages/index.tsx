@@ -3,6 +3,9 @@ import { useRequest } from 'umi';
 import { TreeGraph, Grid } from '@antv/g6';
 import style from './style.less';
 import { IG6GraphEvent } from '@antv/g6/lib/types';
+import registerFn from '@/utils/register';
+
+registerFn();
 
 const Index: SFC = () => {
   const [graph, setGraph] = useState<TreeGraph>();
@@ -48,11 +51,29 @@ const Index: SFC = () => {
         layout: {
           type: 'compactBox',
           direction: 'TB',
-          getVGap() {
-            return 50;
+          getWidth(node: PlainObject) {
+            if (node.children) {
+              return 250;
+            } else {
+              return 140;
+            }
           },
-          getHGap() {
-            return 100;
+          getHeight(node: PlainObject) {
+            if (node.children) {
+              return 200;
+            } else {
+              return 90;
+            }
+          },
+          getVGap(node: PlainObject) {
+            return 20;
+          },
+          getHGap(node: PlainObject) {
+            if (node.children) {
+              return 36;
+            } else {
+              return 91;
+            }
           },
         },
         plugins: [grid],
@@ -67,6 +88,25 @@ const Index: SFC = () => {
       _graph.on('node:mouseleave', (e: IG6GraphEvent) => {
         const { item } = e;
         _graph.setItemState(item!, 'hover', false);
+      });
+
+      _graph.node(function(node) {
+        const { depth } = node;
+        let style = {};
+        if (depth === 1) {
+          style = {
+            width: 250,
+            height: 200,
+          };
+        } else if (depth === 2) {
+          style = {
+            width: 140,
+            height: 90,
+          };
+        }
+        return {
+          style,
+        };
       });
 
       _graph.data(data);
